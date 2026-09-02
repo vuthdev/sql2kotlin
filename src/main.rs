@@ -5,31 +5,59 @@ use sqlparser::{ast::{ColumnOption, DataType::{self}, GeneratedAs, ObjectNamePar
 
 fn main() {
     let sql = r#"
-        create table public."Otp" (
-           	id uuid not null,
-           	"createdAt" timestamptz default CURRENT_TIMESTAMP null,
-           	"createdById" int8 null,
-           	"deletedAt" timestamptz null,
-           	"updatedAt" timestamptz default CURRENT_TIMESTAMP null,
-           	"updatedById" int8 null,
-           	"version" int8 default 0 null,
-           	app int2 null,
-           	code varchar(50) null,
-           	"customerId" uuid null,
-           	device int2 null,
-           	"deviceModel" varchar(255) null,
-           	email varchar(100) null,
-           	"expiredAt" timestamptz null,
-           	hash varchar(1000) null,
-           	"otpHash" varchar(50) null,
-           	"phoneNumber" varchar(50) null,
-           	"sendOtpOption" int2 default 1 null,
-           	status int2 null,
-           	"type" int2 null,
-           	udid varchar(100) null,
-           	"userId" int8 null,
-           	constraint "Otp_id_not_null" not null id,
-           	constraint "Otp_pkey" primary key (id)
+        CREATE TABLE users (
+            -- System Identifiers
+            user_id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            uuid             UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+            
+            -- Login Credentials & Security
+            username         VARCHAR(50) UNIQUE NOT NULL,
+            email            VARCHAR(255) UNIQUE NOT NULL,
+            password_hash    VARCHAR(255) NOT NULL,
+            two_factor_enabled BOOLEAN DEFAULT FALSE,
+            security_pin     VARCHAR(6),
+            
+            -- Personal Profile Information
+            first_name       VARCHAR(50) NOT NULL,
+            last_name        VARCHAR(50) NOT NULL,
+            middle_name      VARCHAR(50),
+            display_name     VARCHAR(100),
+            gender           VARCHAR(20),
+            date_of_birth    DATE,
+            avatar_url       TEXT,
+            bio              TEXT,
+            
+            -- Contact Information
+            phone_number     VARCHAR(20),
+            secondary_email  VARCHAR(255),
+            website_url      TEXT,
+            
+            -- Address Details
+            street_address_1 VARCHAR(255),
+            street_address_2 VARCHAR(100),
+            city             VARCHAR(100),
+            state_province   VARCHAR(100),
+            postal_code      VARCHAR(20),
+            country_code     CHAR(2),
+            
+            -- Localization Settings
+            language_code    VARCHAR(10) DEFAULT 'en',
+            timezone         VARCHAR(50) DEFAULT 'UTC',
+            currency_code    CHAR(3) DEFAULT 'USD',
+            
+            -- Account Status & Role
+            role             VARCHAR(30) DEFAULT 'user',
+            status           VARCHAR(20) DEFAULT 'active',
+            is_email_verified BOOLEAN DEFAULT FALSE,
+            is_phone_verified BOOLEAN DEFAULT FALSE,
+            
+            -- Audit Timestamps
+            created_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_login_at    TIMESTAMPTZ,
+            deleted_at       TIMESTAMPTZ,
+            created_by_id      int8 null,
+            updated_by_id      int8 null,
         );
     "#;
 
@@ -54,14 +82,12 @@ fn main() {
                     "createdById",
                     "updatedAt",
                     "updatedById",
-                    "version",
                     "deletedAt",
                 ]
                 .into_iter()
                 .collect(),
                 Some("BaseEntity") => [
                     "createdAt",
-                    "version",
                     "createdById",
                     "updatedAt",
                     "updatedById",
@@ -179,7 +205,7 @@ fn main() {
                     println!(
                         "  {} {}: {}? = null,",
                         variable_pk,
-                        col_name,
+                        col_name.to_lower_camel_case(),
                         format_data_type(&column.data_type)
                     );
                     println!();
@@ -201,6 +227,7 @@ fn format_data_type(data_type: &DataType) -> String {
         DataType::Uuid => "UUID".to_string(),
         DataType::Int2(_) => "Short".to_string(),
         DataType::Bool => "Boolean".to_string(),
+        DataType::Boolean => "Boolean".to_string(),
         DataType::Text => "String".to_string(),
         DataType::Int4(_) => "Int".to_string(),
         DataType::Int8(_) => "Int".to_string(),
@@ -216,6 +243,7 @@ fn format_data_type(data_type: &DataType) -> String {
         DataType::Double(_) => "Double".to_string(),
         DataType::Float8 => "Double".to_string(),
         DataType::Decimal(_) => "BigDecimal".to_string(),
+        DataType::Char(_) => "String".to_string(),
         DataType::Timestamp(_precision, TimezoneInfo::WithTimeZone | TimezoneInfo::Tz) => {
                     "OffsetDateTime".to_string() // TIMESTAMPTZ
                 }
@@ -229,21 +257,25 @@ fn format_data_type(data_type: &DataType) -> String {
 }
 
 fn check_base_entity(column_names: &[String]) -> Option<&'static str> {
-    let actual: HashSet<&str> = column_names.iter().map(|s| s.as_str()).collect();
-
-    let base_audit: HashSet<&str> = [
+    let actual: HashSet<String> = column_names
+        .iter()
+        .flat_map(|s| [s.to_string(), s.to_lower_camel_case()])
+        .collect();
+    
+    // Minimum required base fields for audit
+    let base_audit: HashSet<String> = [
         "createdAt",
         "updatedAt",
         "createdById",
         "updatedById",
-        "version",
     ]
-    .into_iter()
+    .iter()
+    .map(|s| s.to_string())
     .collect();
-
+    
     let has_base_audit = base_audit.is_subset(&actual);
-    let has_delete = actual.contains("deletedAt");
-
+    let has_delete = actual.contains("deletedAt") || actual.contains("deleted_at");
+    
     if has_base_audit && has_delete {
         Some("BaseWithDeleteEntity")
     } else if has_base_audit {
