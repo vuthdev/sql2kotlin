@@ -229,6 +229,7 @@ fn format_data_type(data_type: &DataType) -> String {
         DataType::Bool => "Boolean".to_string(),
         DataType::Boolean => "Boolean".to_string(),
         DataType::Text => "String".to_string(),
+        DataType::Int(_) => "Int".to_string(),
         DataType::Int4(_) => "Int".to_string(),
         DataType::Int8(_) => "Int".to_string(),
         DataType::Int16 => "Int".to_string(),
@@ -244,6 +245,8 @@ fn format_data_type(data_type: &DataType) -> String {
         DataType::Float8 => "Double".to_string(),
         DataType::Decimal(_) => "BigDecimal".to_string(),
         DataType::Char(_) => "String".to_string(),
+        DataType::JSON => "MutableMap<String, String>".to_string(),
+        DataType::JSONB => "MutableMap<String, String>".to_string(),
         DataType::Timestamp(_precision, TimezoneInfo::WithTimeZone | TimezoneInfo::Tz) => {
                     "OffsetDateTime".to_string() // TIMESTAMPTZ
                 }
@@ -252,6 +255,7 @@ fn format_data_type(data_type: &DataType) -> String {
                 }
         DataType::BigInt(_) => "Long".to_string(),
         DataType::Date => "Date".to_string(),
+        DataType::Date32 => "LocalDate".to_string(), 
         _ => data_type.to_string()
     }
 }
