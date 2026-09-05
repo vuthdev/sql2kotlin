@@ -5,59 +5,60 @@ use sqlparser::{ast::{ColumnOption, DataType::{self}, GeneratedAs, ObjectNamePar
 
 fn main() {
     let sql = r#"
+        -- SQLINES FOR EVALUATION USE ONLY
         CREATE TABLE users (
-            -- System Identifiers
-            user_id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            uuid             UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+            -- Sy... SQLINES DEMO ***
+            user_id          NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            uuid             CHAR(36) DEFAULT gen_random_uuid() UNIQUE NOT NULL,
             
-            -- Login Credentials & Security
-            username         VARCHAR(50) UNIQUE NOT NULL,
-            email            VARCHAR(255) UNIQUE NOT NULL,
-            password_hash    VARCHAR(255) NOT NULL,
-            two_factor_enabled BOOLEAN DEFAULT FALSE,
-            security_pin     VARCHAR(6),
+            -- SQLINES DEMO ***  & Security
+            username         VARCHAR2(50 CHAR) UNIQUE NOT NULL,
+            email            VARCHAR2(255 CHAR) UNIQUE NOT NULL,
+            password_hash    VARCHAR2(255 CHAR) NOT NULL,
+            two_factor_enabled CHAR(1) DEFAULT FALSE,
+            security_pin     VARCHAR2(6 CHAR),
             
-            -- Personal Profile Information
-            first_name       VARCHAR(50) NOT NULL,
-            last_name        VARCHAR(50) NOT NULL,
-            middle_name      VARCHAR(50),
-            display_name     VARCHAR(100),
-            gender           VARCHAR(20),
+            -- SQLINES DEMO *** Information
+            first_name       VARCHAR2(50 CHAR) NOT NULL,
+            last_name        VARCHAR2(50 CHAR) NOT NULL,
+            middle_name      VARCHAR2(50 CHAR),
+            display_name     VARCHAR2(100 CHAR),
+            gender           VARCHAR2(20 CHAR),
             date_of_birth    DATE,
-            avatar_url       TEXT,
-            bio              TEXT,
+            avatar_url       VARCHAR2(4000),
+            bio              VARCHAR2(4000),
             
-            -- Contact Information
-            phone_number     VARCHAR(20),
-            secondary_email  VARCHAR(255),
-            website_url      TEXT,
+            -- Co... SQLINES DEMO ***
+            phone_number     VARCHAR2(20 CHAR),
+            secondary_email  VARCHAR2(255 CHAR),
+            website_url      VARCHAR2(4000),
             
-            -- Address Details
-            street_address_1 VARCHAR(255),
-            street_address_2 VARCHAR(100),
-            city             VARCHAR(100),
-            state_province   VARCHAR(100),
-            postal_code      VARCHAR(20),
+            -- Ad... SQLINES DEMO ***
+            street_address_1 VARCHAR2(255 CHAR),
+            street_address_2 VARCHAR2(100 CHAR),
+            city             VARCHAR2(100 CHAR),
+            state_province   VARCHAR2(100 CHAR),
+            postal_code      VARCHAR2(20 CHAR),
             country_code     CHAR(2),
             
-            -- Localization Settings
-            language_code    VARCHAR(10) DEFAULT 'en',
-            timezone         VARCHAR(50) DEFAULT 'UTC',
+            -- SQLINES DEMO *** ings
+            language_code    VARCHAR2(10 CHAR) DEFAULT 'en',
+            timezone         VARCHAR2(50 CHAR) DEFAULT 'UTC',
             currency_code    CHAR(3) DEFAULT 'USD',
             
-            -- Account Status & Role
-            role             VARCHAR(30) DEFAULT 'user',
-            status           VARCHAR(20) DEFAULT 'active',
-            is_email_verified BOOLEAN DEFAULT FALSE,
-            is_phone_verified BOOLEAN DEFAULT FALSE,
+            -- SQLINES DEMO *** Role
+            role             VARCHAR2(30 CHAR) DEFAULT 'user',
+            status           VARCHAR2(20 CHAR) DEFAULT 'active',
+            is_email_verified CHAR(1) DEFAULT FALSE,
+            is_phone_verified CHAR(1) DEFAULT FALSE,
             
-            -- Audit Timestamps
-            created_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            last_login_at    TIMESTAMPTZ,
-            deleted_at       TIMESTAMPTZ,
-            created_by_id      int8 null,
-            updated_by_id      int8 null,
+            -- Au... SQLINES DEMO ***
+            created_at       TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+            updated_at       TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+            last_login_at    TIMESTAMP WITH TIME ZONE,
+            deleted_at       TIMESTAMP WITH TIME ZONE,
+            created_by_id      number(19) null,
+            updated_by_id      number(19) null,
         );
     "#;
 
